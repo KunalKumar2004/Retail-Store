@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Retail Store Management</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📉 Low Stock Report</h1>
+            <p>Products that need immediate attention</p>
+            <nav style="margin-top: 20px;">
+                <a href="/dashboard" class="btn btn-primary btn-sm">Dashboard</a>
+                <a href="/reports" class="btn btn-secondary btn-sm">All Reports</a>
+                <a href="/products/add" class="btn btn-success btn-sm">Add Product</a>
+            </nav>
+        </header>
+
+        <% if (typeof error !== 'undefined') { %>
+            <div class="alert alert-error">
+                <%= error %>
+            </div>
+        <% } %>
+
+        <div class="card">
+            <div class="actions-header">
+                <h2>🚨 Low Stock Products</h2>
+                <a href="/products" class="btn btn-primary">Manage Products</a>
+            </div>
+
+            <% if (products && products.length > 0) { %>
+                <div class="table-container">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Brand</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Current Stock</th>
+                                <th>Reorder Level</th>
+                                <th>Unit Price</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% products.forEach(product => { %>
+                                <tr>
+                                    <td><%= product.id %></td>
+                                    <td><%= product.brand %></td>
+                                    <td><strong><%= product.name %></strong></td>
+                                    <td><%= product.category %></td>
+                                    <td style="color: #e74c3c; font-weight: bold;">
+                                        <%= product.stock %>
+                                    </td>
+                                    <td><%= product.reorder_level %></td>
+                                    <td>$<%= parseFloat(product.unit_price).toFixed(2) %></td>
+                                    <td>
+                                        <% if (product.stock === 0) { %>
+                                            <span style="color: #e74c3c; font-weight: bold;">OUT OF STOCK</span>
+                                        <% } else { %>
+                                            <span style="color: #f39c12; font-weight: bold;">LOW STOCK</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } else { %>
+                <div class="alert alert-success">
+                    ✅ No low stock items! All products are well-stocked.
+                </div>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>

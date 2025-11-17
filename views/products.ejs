@@ -1,0 +1,336 @@
+<% if (typeof error !== 'undefined') { %>
+    <div class="alert alert-error">
+        <%= error %>
+    </div>
+<% } %>
+
+<% if (typeof message !== 'undefined' && message) { %>
+    <div class="alert alert-<%= message.type === 'success' ? 'success' : 'error' %>">
+        <%= message.text %>
+    </div>
+<% } %>
+
+<link rel="stylesheet" href="/css/style.css?v=1.1">
+<div class="card">
+    <div class="actions-header">
+        <h2>📦 Product Inventory</h2>
+        <a href="/products/add" class="btn btn-primary">+ Add New Product</a>
+    </div>
+
+    <!-- Search and Quick Actions -->
+    <div style="margin-bottom: 20px;">
+        <form action="/search" method="GET" style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" name="q" class="form-control" 
+                   placeholder="Search products by name, brand, or category..."
+                   value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
+                   style="flex: 1;">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+                <a href="/products" class="btn btn-secondary">Clear</a>
+            <% } %>
+        </form>
+        
+        <!-- Quick Filters -->
+        <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+            <a href="/search?q=lowstock" class="btn btn-warning btn-sm">📉 Low Stock</a>
+            <a href="/search?q=outofstock" class="btn btn-danger btn-sm">❌ Out of Stock</a>
+            <a href="/reports/low-stock" class="btn btn-info btn-sm">📊 Stock Report</a>
+        </div>
+    </div>
+
+    <% if (products && products.length > 0) { %>
+        <div class="table-container">
+            <table class="products-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Brand</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Stock</th>
+                        <th>Unit Price</th>
+                        <th>Total Value</th>
+                        <th>Reorder Level</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% products.forEach(product => { 
+                        const totalValue = product.stock * product.unit_price;
+                        let stockStatus = 'stock-ok';
+                        let statusText = 'In Stock';
+                        let statusClass = 'status-ok';
+                        
+                        if (product.stock === 0) {
+                            stockStatus = 'stock-out';
+                            statusText = 'Out of Stock';
+                            statusClass = 'status-error';
+                        } else if (product.stock <= product.reorder_level) {
+                            stockStatus = 'stock-low';
+                            statusText = 'Low Stock';
+                            statusClass = 'status-warning';
+                        }
+                    %>
+                        <tr>
+                            <td class="product-id"><%= product.id %></td>
+                            <td class="product-brand"><%= product.brand %></td>
+                            <td class="product-name"><strong><%= product.name %></strong></td>
+                            <td class="product-category"><%= product.category %></td>
+                            <td class="<%= stockStatus %>">
+                                <%= product.stock %>
+                            </td>
+                            <td class="product-price">$<%= parseFloat(product.unit_price).toFixed(2) %></td>
+                            <td class="product-value">$<%= totalValue.toFixed(2) %></td>
+                            <td class="reorder-level"><%= product.reorder_level %></td>
+                            <td>
+                                <span class="status-badge <%= statusClass %>"><%= statusText %></span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <!-- Edit Button with Form -->
+                                    <form action="/products/edit/<%= product.id %>" method="GET" style="display: inline;">
+                                        <button type="submit" class="btn btn-warning btn-sm" title="Edit Product">
+                                            ✏️ Edit
+                                        </button>
+                                    </form>
+                                    
+                                    <!-- Delete Button with Form -->
+                                    <form action="/products/delete/<%= product.id %>" method="POST" style="display: inline;" 
+                                          onsubmit="return confirmDelete('<%= product.name %>')">
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Delete Product">
+                                            🗑️ Delete
+                                        </button>
+                                    </form>
+                                    
+                                    <!-- Quick Actions Dropdown -->
+                                    <div class="dropdown" style="display: inline-block;">
+                                        <button class="btn btn-info btn-sm dropdown-toggle" type="button" 
+                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            ⚡ Quick
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <form action="/products/save" method="POST" style="display: block;">
+                                                <input type="hidden" name="id" value="<%= product.id %>">
+                                                <input type="hidden" name="brand" value="<%= product.brand %>">
+                                                <input type="hidden" name="name" value="<%= product.name %>">
+                                                <input type="hidden" name="category" value="<%= product.category %>">
+                                                <input type="hidden" name="unit_price" value="<%= product.unit_price %>">
+                                                <input type="hidden" name="reorder_level" value="<%= product.reorder_level %>">
+                                                
+                                                <!-- Quick Stock Update -->
+                                                <div class="dropdown-item">
+                                                    <label>Stock: 
+                                                        <input type="number" name="stock" value="<%= product.stock %>" 
+                                                               min="0" style="width: 80px; padding: 2px;" 
+                                                               onchange="this.form.submit()">
+                                                    </label>
+                                                </div>
+                                                
+                                                <!-- Quick Price Update -->
+                                                <div class="dropdown-item">
+                                                    <label>Price: $
+                                                        <input type="number" name="unit_price" 
+                                                               value="<%= parseFloat(product.unit_price).toFixed(2) %>" 
+                                                               step="0.01" min="0" style="width: 80px; padding: 2px;"
+                                                               onchange="this.form.submit()">
+                                                    </label>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="summary-stats" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+            <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+                <div class="stat-item">
+                    <strong>Total Products:</strong> <%= products.length %>
+                </div>
+                <div class="stat-item">
+                    <strong>Low Stock:</strong> 
+                    <span class="status-warning">
+                        <%= products.filter(p => p.stock <= p.reorder_level && p.stock > 0).length %>
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <strong>Out of Stock:</strong> 
+                    <span class="status-error">
+                        <%= products.filter(p => p.stock === 0).length %>
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <strong>Total Inventory Value:</strong> 
+                    $<%= products.reduce((sum, p) => sum + (p.stock * p.unit_price), 0).toFixed(2) %>
+                </div>
+            </div>
+        </div>
+    <% } else { %>
+        <div class="empty-state">
+            <div style="text-align: center; padding: 3rem;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">📦</div>
+                <h3>No Products Found</h3>
+                <p style="color: #6c757d; margin-bottom: 2rem;">
+                    <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+                        No products match your search criteria "<strong><%= searchQuery %></strong>"
+                    <% } else { %>
+                        Your product inventory is empty. Add your first product to get started.
+                    <% } %>
+                </p>
+                <a href="/products/add" class="btn btn-primary btn-lg">+ Add Your First Product</a>
+                <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+                    <a href="/products" class="btn btn-secondary">View All Products</a>
+                <% } %>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<!-- JavaScript for Enhanced Functionality -->
+<script>
+// Enhanced confirmation for delete
+function confirmDelete(productName) {
+    return confirm(`Are you sure you want to delete "${productName}"? This action cannot be undone.`);
+}
+
+// Quick edit functionality
+function quickEdit(field, productId) {
+    const newValue = prompt(`Enter new ${field}:`);
+    if (newValue !== null && newValue.trim() !== '') {
+        // You can implement AJAX call here for real-time updates
+        console.log(`Updating ${field} for product ${productId} to:`, newValue);
+    }
+}
+
+// Auto-hide alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 300);
+        }, 5000);
+    });
+});
+
+// Dropdown functionality
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('dropdown-toggle')) {
+        e.preventDefault();
+        const dropdown = e.target.closest('.dropdown');
+        dropdown.classList.toggle('open');
+    }
+});
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown').forEach(dropdown => {
+            dropdown.classList.remove('open');
+        });
+    }
+});
+</script>
+
+<style>
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.action-buttons form {
+    margin: 0;
+}
+
+.stock-ok { color: #28a745; font-weight: bold; }
+.stock-low { color: #ffc107; font-weight: bold; }
+.stock-out { color: #dc3545; font-weight: bold; }
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.status-ok { background: #d4edda; color: #155724; }
+.status-warning { background: #fff3cd; color: #856404; }
+.status-error { background: #f8d7da; color: #721c24; }
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    min-width: 200px;
+}
+
+.dropdown.open .dropdown-menu {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.summary-stats {
+    font-size: 0.9rem;
+}
+
+.stat-item {
+    margin: 5px 0;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+}
+
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .action-buttons form {
+        margin-bottom: 5px;
+    }
+    
+    .summary-stats .stat-item {
+        flex: 0 0 50%;
+        margin-bottom: 10px;
+    }
+}
+</style>

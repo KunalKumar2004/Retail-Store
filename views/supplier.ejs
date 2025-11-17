@@ -1,0 +1,34 @@
+<%- include('layout') %>
+
+<div class="container">
+<h2>Suppliers List</h2>
+<a href="/suppliers/add">Add New Supplier</a>
+<link rel="stylesheet" href="/css/style.css?v=1.1">
+<table class="product-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Contact Number</th>
+            <th>Email</th>
+            <th>Address</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% suppliers.forEach(supplier => { %>
+        <tr>
+            <td><%= supplier.supplier_id %></td>
+            <td><%= supplier.name %></td>
+            <td><%= supplier.contact_number %></td>
+            <td><%= supplier.email %></td>
+            <td><%= supplier.address %></td>
+            <td>
+                <a href="/suppliers/edit/<%= supplier.supplier_id %>">Edit</a> |
+                <a href="/suppliers/delete/<%= supplier.supplier_id %>" onclick="return confirm('Delete this supplier?')">Delete</a>
+            </td>
+        </tr>
+        <% }) %>
+    </tbody>
+</table>
+</div>

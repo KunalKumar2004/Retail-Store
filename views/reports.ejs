@@ -1,0 +1,69 @@
+<% if (typeof error !== 'undefined') { %>
+    <div class="alert alert-error">
+        <%= error %>
+    </div>
+<% } %>
+<link rel="stylesheet" href="/css/style.css?v=1.1">
+<div class="stats-cards">
+    <div class="stat-card">
+        <div class="stat-number"><%= stats.totalProducts || 0 %></div>
+        <div class="stat-label">Total Products</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" style="color: #e74c3c"><%= stats.lowStockCount || 0 %></div>
+        <div class="stat-label">Low Stock Items</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" style="color: #e74c3c"><%= stats.outOfStockCount || 0 %></div>
+        <div class="stat-label">Out of Stock</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">$<%= parseFloat(stats.totalInventoryValue || 0).toFixed(2) %></div>
+        <div class="stat-label">Total Inventory Value</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="actions-header">
+        <h2>📋 Available Reports</h2>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+        <a href="/reports/low-stock" class="btn btn-warning" style="text-align: center; padding: 20px;">
+            📉 Low Stock Report
+        </a>
+        <a href="/reports/inventory-value" class="btn btn-primary" style="text-align: center; padding: 20px;">
+            💰 Inventory Value
+        </a>
+        <a href="/reports/categories" class="btn btn-success" style="text-align: center; padding: 20px;">
+            🏷️ Category Analysis
+        </a>
+        <a href="/products" class="btn btn-secondary" style="text-align: center; padding: 20px;">
+            📦 All Products
+        </a>
+    </div>
+</div>
+
+<!-- Category Statistics -->
+<% if (categoryStats.length > 0) { %>
+<div class="card">
+    <h2>🏷️ Products by Category</h2>
+    <div class="table-container">
+        <table class="products-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Number of Products</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% categoryStats.forEach(cat => { %>
+                <tr>
+                    <td><%= cat.category || 'Uncategorized' %></td>
+                    <td><%= cat.count %></td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+<% } %>

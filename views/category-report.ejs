@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Retail Store Management</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🏷️ Category Analysis Report</h1>
+            <p>Product distribution across categories</p>
+            <nav style="margin-top: 20px;">
+                <a href="/reports" class="btn btn-primary btn-sm">All Reports</a>
+                <a href="/dashboard" class="btn btn-secondary btn-sm">Dashboard</a>
+            </nav>
+        </header>
+
+        <div class="card">
+            <div class="table-container">
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Number of Products</th>
+                            <th>Total Stock</th>
+                            <th>Total Value</th>
+                            <th>Average Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% categories.forEach(cat => { %>
+                            <tr>
+                                <td><strong><%= cat.category %></strong></td>
+                                <td><%= cat.product_count %></td>
+                                <td><%= cat.total_stock %></td>
+                                <td>$<%= parseFloat(cat.total_value).toFixed(2) %></td>
+                                <td>$<%= parseFloat(cat.avg_price).toFixed(2) %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
